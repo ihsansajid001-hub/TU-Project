@@ -4,12 +4,15 @@ import { AdminDashboard } from './admin/AdminDashboard';
 
 export function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
     // Check if user is already logged in
     const auth = localStorage.getItem('adminAuth');
-    if (auth === 'true') {
+    const savedUsername = localStorage.getItem('adminUsername');
+    if (auth === 'true' && savedUsername) {
       setIsAuthenticated(true);
+      setUsername(savedUsername);
     }
   }, []);
 
@@ -17,7 +20,9 @@ export function Admin() {
     // Simple authentication - in production, use proper backend authentication
     if (username === 'admin' && password === 'teamunited2024') {
       setIsAuthenticated(true);
+      setUsername(username);
       localStorage.setItem('adminAuth', 'true');
+      localStorage.setItem('adminUsername', username);
     } else {
       alert('Invalid credentials. Use username: admin, password: teamunited2024');
     }
@@ -25,12 +30,14 @@ export function Admin() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setUsername('');
     localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminUsername');
   };
 
   if (!isAuthenticated) {
     return <AdminLogin onLogin={handleLogin} />;
   }
 
-  return <AdminDashboard onLogout={handleLogout} />;
+  return <AdminDashboard onLogout={handleLogout} username={username} />;
 }

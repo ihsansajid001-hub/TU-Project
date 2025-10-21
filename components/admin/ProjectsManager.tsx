@@ -155,40 +155,41 @@ export function ProjectsManager() {
         </motion.div>
       )}
 
-      {/* Projects List */}
-      <div className="grid grid-cols-1 gap-4">
+      {/* Projects Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {projects.map((project) => (
           <motion.div
             key={project.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="glass rounded-2xl p-6 border border-primary/20"
+            className="glass rounded-xl p-4 border border-primary/20 flex flex-col"
           >
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-foreground mb-2">{project.title}</h3>
-                <p className="text-muted-foreground mb-3">{project.description}</p>
-                <div className="flex flex-wrap gap-2 text-sm">
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-lg">{project.category}</span>
-                  <span className="px-3 py-1 glass rounded-lg text-foreground">{project.status}</span>
-                  <span className="px-3 py-1 glass rounded-lg text-foreground">{project.location}</span>
-                  <span className="px-3 py-1 glass rounded-lg text-foreground">{project.date}</span>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(project)}
-                  className="p-2 glass rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                >
-                  <Edit size={20} />
-                </button>
-                <button
-                  onClick={() => handleDelete(project.id)}
-                  className="p-2 glass rounded-lg hover:bg-red-500/10 text-red-500 transition-colors"
-                >
-                  <Trash2 size={20} />
-                </button>
-              </div>
+            <img 
+              src={project.image} 
+              alt={project.title} 
+              className="w-full h-32 object-cover rounded-lg mb-3"
+            />
+            <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-1">{project.title}</h3>
+            <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">{project.description}</p>
+            <div className="flex flex-wrap gap-1 text-xs mb-3">
+              <span className="px-2 py-1 bg-primary/10 text-primary rounded-md">{project.category}</span>
+              <span className="px-2 py-1 glass rounded-md text-foreground">{project.status}</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(project)}
+                className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-primary/10 text-primary transition-colors text-sm"
+              >
+                <Edit size={16} />
+                <span>Edit</span>
+              </button>
+              <button
+                onClick={() => handleDelete(project.id)}
+                className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-red-500/10 text-red-500 transition-colors text-sm"
+              >
+                <Trash2 size={16} />
+                <span>Delete</span>
+              </button>
             </div>
           </motion.div>
         ))}

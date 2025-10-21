@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
@@ -46,6 +46,27 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Layout wrapper to conditionally show Navbar and Footer
+function Layout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="min-h-screen">
+      {/* Navigation - Hidden on admin routes */}
+      {!isAdminRoute && <Navbar />}
+
+      {/* Main Content */}
+      <main>
+        {children}
+      </main>
+
+      {/* Footer - Hidden on admin routes */}
+      {!isAdminRoute && <Footer />}
+    </div>
+  );
+}
+
 export default function App() {
   // Apply dark mode immediately on mount
   useEffect(() => {
@@ -58,38 +79,29 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen">
-        {/* Navigation */}
-        <Navbar />
-
-        {/* Main Content */}
-        <main>
-          <Routes>
-            <Route path="/" element={<PageWrapper><HomePage /></PageWrapper>} />
-            <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
-            <Route path="/projects" element={<PageWrapper><Projects /></PageWrapper>} />
-            <Route path="/projects/:id" element={<PageWrapper><ProjectDetail /></PageWrapper>} />
-            <Route path="/gallery" element={<PageWrapper><Works /></PageWrapper>} />
-            <Route path="/story" element={<PageWrapper><Story /></PageWrapper>} />
-            <Route path="/story/:id" element={<PageWrapper><StoryDetail /></PageWrapper>} />
-            <Route path="/get-in-touch" element={<PageWrapper><Contact /></PageWrapper>} />
-            
-            {/* Join Us Pages (Not in navbar - accessible from footer/buttons) */}
-            <Route path="/become-partner" element={<PageWrapper><BecomePartner /></PageWrapper>} />
-            <Route path="/become-volunteer" element={<PageWrapper><BecomeVolunteer /></PageWrapper>} />
-            <Route path="/share-story" element={<PageWrapper><ShareStory /></PageWrapper>} />
-            
-            {/* Admin Panel */}
-            <Route path="/admin" element={<Admin />} />
-            
-            {/* Catch all unmatched routes and redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-
-        {/* Footer */}
-        <Footer />
-      </div>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<PageWrapper><HomePage /></PageWrapper>} />
+          <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
+          <Route path="/projects" element={<PageWrapper><Projects /></PageWrapper>} />
+          <Route path="/projects/:id" element={<PageWrapper><ProjectDetail /></PageWrapper>} />
+          <Route path="/gallery" element={<PageWrapper><Works /></PageWrapper>} />
+          <Route path="/story" element={<PageWrapper><Story /></PageWrapper>} />
+          <Route path="/story/:id" element={<PageWrapper><StoryDetail /></PageWrapper>} />
+          <Route path="/get-in-touch" element={<PageWrapper><Contact /></PageWrapper>} />
+          
+          {/* Join Us Pages (Not in navbar - accessible from footer/buttons) */}
+          <Route path="/become-partner" element={<PageWrapper><BecomePartner /></PageWrapper>} />
+          <Route path="/become-volunteer" element={<PageWrapper><BecomeVolunteer /></PageWrapper>} />
+          <Route path="/share-story" element={<PageWrapper><ShareStory /></PageWrapper>} />
+          
+          {/* Admin Panel */}
+          <Route path="/admin" element={<Admin />} />
+          
+          {/* Catch all unmatched routes and redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }

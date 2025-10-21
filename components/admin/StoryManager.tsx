@@ -154,46 +154,45 @@ export function StoryManager() {
         </motion.div>
       )}
 
-      {/* Stories List */}
-      <div className="grid grid-cols-1 gap-4">
+      {/* Stories Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {stories.map((story) => (
           <motion.div
             key={story.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="glass rounded-2xl p-6 border border-primary/20"
+            className="glass rounded-xl p-4 border border-primary/20 flex flex-col"
           >
-            <div className="flex gap-4">
+            <div className="flex items-center gap-3 mb-3">
               <img 
                 src={story.image} 
                 alt={story.name} 
-                className="w-20 h-20 rounded-xl object-cover"
+                className="w-16 h-16 rounded-lg object-cover"
               />
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground">{story.name}</h3>
-                    <p className="text-sm text-muted-foreground">{story.project} • {story.location}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(story)}
-                      className="p-2 glass rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                    >
-                      <Edit size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(story.id)}
-                      className="p-2 glass rounded-lg hover:bg-red-500/10 text-red-500 transition-colors"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-muted-foreground text-sm mb-2 line-clamp-2 italic">"{story.quote}"</p>
-                <p className="text-muted-foreground text-sm mb-2 line-clamp-2">{story.story}</p>
-                <p className="text-xs text-primary">Impact: {story.impact}</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold text-foreground line-clamp-1">{story.name}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-1">{story.location}</p>
               </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-2 line-clamp-1 font-semibold">{story.project}</p>
+            <p className="text-sm text-muted-foreground mb-2 line-clamp-2 italic">"{story.quote}"</p>
+            <p className="text-xs text-muted-foreground mb-3 line-clamp-2 flex-1">{story.story}</p>
+            <p className="text-xs text-primary mb-3 line-clamp-1">Impact: {story.impact}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(story)}
+                className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-primary/10 text-primary transition-colors text-sm"
+              >
+                <Edit size={16} />
+                <span>Edit</span>
+              </button>
+              <button
+                onClick={() => handleDelete(story.id)}
+                className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-red-500/10 text-red-500 transition-colors text-sm"
+              >
+                <Trash2 size={16} />
+                <span>Delete</span>
+              </button>
             </div>
           </motion.div>
         ))}
