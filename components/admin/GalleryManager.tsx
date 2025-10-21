@@ -18,6 +18,7 @@ export function GalleryManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<Partial<GalleryItem>>({});
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchGallery();
@@ -56,6 +57,9 @@ export function GalleryManager() {
   };
 
   const handleSave = async () => {
+    if (saving) return;
+    
+    setSaving(true);
     try {
       if (isAdding) {
         const { error } = await supabase
@@ -79,6 +83,8 @@ export function GalleryManager() {
     } catch (error) {
       console.error('Error saving gallery item:', error);
       alert('Failed to save gallery item');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -168,10 +174,11 @@ export function GalleryManager() {
           <div className="flex gap-3 mt-4">
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl transition-colors"
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={20} />
-              <span>Save</span>
+              <span>{saving ? 'Saving...' : 'Save'}</span>
             </button>
             <button
               onClick={handleCancel}

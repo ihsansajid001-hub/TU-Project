@@ -21,6 +21,7 @@ export function ProjectsManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<Partial<Project>>({});
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // Fetch projects from Supabase
   useEffect(() => {
@@ -63,6 +64,9 @@ export function ProjectsManager() {
   };
 
   const handleSave = async () => {
+    if (saving) return; // Prevent duplicate submissions
+    
+    setSaving(true);
     try {
       if (isAdding) {
         const { error } = await supabase
@@ -86,6 +90,8 @@ export function ProjectsManager() {
     } catch (error) {
       console.error('Error saving project:', error);
       alert('Failed to save project');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -201,10 +207,11 @@ export function ProjectsManager() {
           <div className="flex gap-3 mt-4">
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl transition-colors"
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={20} />
-              <span>Save</span>
+              <span>{saving ? 'Saving...' : 'Save'}</span>
             </button>
             <button
               onClick={handleCancel}

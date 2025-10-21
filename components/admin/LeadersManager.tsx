@@ -4,41 +4,37 @@ import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { ImageUpload } from './ImageUpload';
 
-interface Story {
+interface Leader {
   id: string;
   name: string;
-  location: string;
-  project: string;
-  profile_image_url: string;
-  quote: string;
-  story: string;
-  impact: string;
+  role: string;
+  image_url: string;
 }
 
-export function StoryManager() {
-  const [stories, setStories] = useState<Story[]>([]);
+export function LeadersManager() {
+  const [leaders, setLeaders] = useState<Leader[]>([]);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState<Partial<Story>>({});
+  const [formData, setFormData] = useState<Partial<Leader>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchStories();
+    fetchLeaders();
   }, []);
 
-  const fetchStories = async () => {
+  const fetchLeaders = async () => {
     try {
       const { data, error } = await supabase
-        .from('stories')
+        .from('leaders')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setStories(data || []);
+      setLeaders(data || []);
     } catch (error) {
-      console.error('Error fetching stories:', error);
-      alert('Failed to load stories');
+      console.error('Error fetching leaders:', error);
+      alert('Failed to load leaders');
     } finally {
       setLoading(false);
     }
@@ -48,18 +44,14 @@ export function StoryManager() {
     setIsAdding(true);
     setFormData({
       name: '',
-      location: '',
-      project: '',
-      profile_image_url: '',
-      quote: '',
-      story: '',
-      impact: ''
+      role: '',
+      image_url: ''
     });
   };
 
-  const handleEdit = (story: Story) => {
-    setIsEditing(story.id);
-    setFormData(story);
+  const handleEdit = (leader: Leader) => {
+    setIsEditing(leader.id);
+    setFormData(leader);
   };
 
   const handleSave = async () => {
@@ -69,46 +61,46 @@ export function StoryManager() {
     try {
       if (isAdding) {
         const { error } = await supabase
-          .from('stories')
+          .from('leaders')
           .insert([formData]);
 
         if (error) throw error;
-        alert('Story added successfully!');
+        alert('Leader added successfully!');
       } else if (isEditing) {
         const { error } = await supabase
-          .from('stories')
+          .from('leaders')
           .update(formData)
           .eq('id', isEditing);
 
         if (error) throw error;
-        alert('Story updated successfully!');
+        alert('Leader updated successfully!');
       }
 
-      await fetchStories();
+      await fetchLeaders();
       handleCancel();
     } catch (error) {
-      console.error('Error saving story:', error);
-      alert('Failed to save story');
+      console.error('Error saving leader:', error);
+      alert('Failed to save leader');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this story?')) return;
+    if (!confirm('Are you sure you want to delete this leader?')) return;
 
     try {
       const { error } = await supabase
-        .from('stories')
+        .from('leaders')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      alert('Story deleted successfully!');
-      await fetchStories();
+      alert('Leader deleted successfully!');
+      await fetchLeaders();
     } catch (error) {
-      console.error('Error deleting story:', error);
-      alert('Failed to delete story');
+      console.error('Error deleting leader:', error);
+      alert('Failed to delete leader');
     }
   };
 
@@ -119,13 +111,13 @@ export function StoryManager() {
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading stories...</div>;
+    return <div className="text-center py-8 text-muted-foreground">Loading leaders...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">Manage Stories</h2>
+        <h2 className="text-2xl font-bold text-foreground">Meet Our Change Leaders</h2>
         {!isAdding && !isEditing && (
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -134,7 +126,7 @@ export function StoryManager() {
             className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl transition-colors"
           >
             <Plus size={20} />
-            <span>Add Story</span>
+            <span>Add Leader</span>
           </motion.button>
         )}
       </div>
@@ -147,7 +139,7 @@ export function StoryManager() {
           className="glass rounded-2xl p-6 border border-primary/20"
         >
           <h3 className="text-xl font-bold text-foreground mb-4">
-            {isAdding ? 'Add New Story' : 'Edit Story'}
+            {isAdding ? 'Add New Leader' : 'Edit Leader'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
@@ -159,46 +151,18 @@ export function StoryManager() {
             />
             <input
               type="text"
-              placeholder="Location"
-              value={formData.location || ''}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              placeholder="Role"
+              value={formData.role || ''}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
-            />
-            <input
-              type="text"
-              placeholder="Project"
-              value={formData.project || ''}
-              onChange={(e) => setFormData({ ...formData, project: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
             />
             <div className="md:col-span-2">
               <ImageUpload
-                value={formData.profile_image_url || ''}
-                onChange={(imageUrl) => setFormData({ ...formData, profile_image_url: imageUrl })}
-                label="Profile Image"
+                value={formData.image_url || ''}
+                onChange={(imageUrl) => setFormData({ ...formData, image_url: imageUrl })}
+                label="Leader Image"
               />
             </div>
-            <textarea
-              placeholder="Quote"
-              value={formData.quote || ''}
-              onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
-              rows={2}
-            />
-            <textarea
-              placeholder="Story"
-              value={formData.story || ''}
-              onChange={(e) => setFormData({ ...formData, story: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
-              rows={4}
-            />
-            <textarea
-              placeholder="Impact"
-              value={formData.impact || ''}
-              onChange={(e) => setFormData({ ...formData, impact: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
-              rows={2}
-            />
           </div>
           <div className="flex gap-3 mt-4">
             <button
@@ -220,40 +184,32 @@ export function StoryManager() {
         </motion.div>
       )}
 
-      {/* Stories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {stories.map((story) => (
+      {/* Leaders Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {leaders.map((leader) => (
           <motion.div
-            key={story.id}
+            key={leader.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="glass rounded-xl p-4 border border-primary/20 flex flex-col"
+            className="glass rounded-xl p-4 border border-primary/20 flex flex-col items-center text-center"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <img 
-                src={story.profile_image_url} 
-                alt={story.name} 
-                className="w-16 h-16 rounded-lg object-cover"
-              />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-foreground line-clamp-1">{story.name}</h3>
-                <p className="text-xs text-muted-foreground line-clamp-1">{story.location}</p>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mb-2 line-clamp-1 font-semibold">{story.project}</p>
-            <p className="text-sm text-muted-foreground mb-2 line-clamp-2 italic">"{story.quote}"</p>
-            <p className="text-xs text-muted-foreground mb-3 line-clamp-2 flex-1">{story.story}</p>
-            <p className="text-xs text-primary mb-3 line-clamp-1">Impact: {story.impact}</p>
-            <div className="flex gap-2">
+            <img 
+              src={leader.image_url} 
+              alt={leader.name} 
+              className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-primary/30"
+            />
+            <h3 className="text-lg font-bold text-foreground mb-1">{leader.name}</h3>
+            <p className="text-sm text-primary mb-4">{leader.role}</p>
+            <div className="flex gap-2 w-full">
               <button
-                onClick={() => handleEdit(story)}
+                onClick={() => handleEdit(leader)}
                 className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-primary/10 text-primary transition-colors text-sm"
               >
                 <Edit size={16} />
                 <span>Edit</span>
               </button>
               <button
-                onClick={() => handleDelete(story.id)}
+                onClick={() => handleDelete(leader.id)}
                 className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-red-500/10 text-red-500 transition-colors text-sm"
               >
                 <Trash2 size={16} />
@@ -264,9 +220,9 @@ export function StoryManager() {
         ))}
       </div>
 
-      {stories.length === 0 && (
+      {leaders.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
-          No stories yet. Click "Add Story" to create one.
+          No leaders yet. Click "Add Leader" to create one.
         </div>
       )}
     </div>

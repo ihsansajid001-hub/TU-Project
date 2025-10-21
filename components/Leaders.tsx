@@ -2,40 +2,39 @@ import { motion } from 'framer-motion';
 import { Globe, ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface Leader {
+  id: string;
+  name: string;
+  role: string;
+  image_url: string;
+}
 
 export function Leaders() {
-  const leaders = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Founder & CEO',
-      image: 'https://images.unsplash.com/photo-1613473350016-1fe047d6d360?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGV4ZWN1dGl2ZSUyMHBvcnRyYWl0fGVufDF8fHx8MTc2MDYzNzc5M3ww&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Director of Programs',
-      image: 'https://images.unsplash.com/photo-1738566061505-556830f8b8f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBsZWFkZXIlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NjA2NzU0NDd8MA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    {
-      name: 'Aisha Patel',
-      role: 'Head of Operations',
-      image: 'https://images.unsplash.com/photo-1758691737605-69a0e78bd193?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMGxlYWRlciUyMHBvcnRyYWl0fGVufDF8fHx8MTc2MDczNTMxNXww&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    {
-      name: 'David Martinez',
-      role: 'Community Manager',
-      image: 'https://images.unsplash.com/photo-1614720152685-2344c3c91192?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwbGVhZGVyJTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc2MDY4ODkwOHww&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Partnerships Lead',
-      image: 'https://images.unsplash.com/photo-1708195886023-3ecb00ac7a49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHByb2Zlc3Npb25hbCUyMHBvcnRyYWl0fGVufDF8fHx8MTc2MDczNDM4M3ww&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    {
-      name: 'James Wilson',
-      role: 'Tech Innovation Officer',
-      image: 'https://images.unsplash.com/photo-1617386124435-9eb3935b1e11?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbnRyZXByZW5ldXIlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NjA2MTM4MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080'
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLeaders();
+  }, []);
+
+  const fetchLeaders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('leaders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setLeaders(data || []);
+    } catch (error) {
+      console.error('Error fetching leaders:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const globalStats = [
     { number: '15+', label: 'Chapters Worldwide' },
@@ -82,10 +81,15 @@ export function Leaders() {
         </motion.div>
 
         {/* Team Grid */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground mb-32">Loading leaders...</div>
+        ) : leaders.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground mb-32">No leaders available yet.</div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-32">
           {leaders.map((leader, index) => (
             <motion.div
-              key={leader.name}
+              key={leader.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -106,7 +110,7 @@ export function Leaders() {
                     className="w-full h-full"
                   >
                     <ImageWithFallback
-                      src={leader.image}
+                      src={leader.image_url}
                       alt={leader.name}
                       className="w-full h-full object-cover"
                     />
@@ -132,6 +136,7 @@ export function Leaders() {
             </motion.div>
           ))}
         </div>
+        )}
 
         {/* Global Partnerships Section */}
         <motion.div

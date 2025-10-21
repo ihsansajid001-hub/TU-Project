@@ -43,10 +43,12 @@ function HomePage() {
 
 // Wrapper for page content
 function PageWrapper({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+
   useEffect(() => {
     // Scroll to top on page change
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [location.pathname]);
 
   return <>{children}</>;
 }
