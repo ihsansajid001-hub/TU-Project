@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Heart } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -139,32 +139,18 @@ export function Footer() {
               &copy; {currentYear} Team United. All rights reserved.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <Link to="/privacy" className="hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-                <span>•</span>
-                <Link to="/terms" className="hover:text-primary transition-colors">
-                  Terms & Conditions
-                </Link>
-              </div>
-              
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                className="flex items-center gap-2 text-muted-foreground text-sm"
-              >
-                <span>Made with</span>
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                >
-                  <Heart className="text-primary" size={16} fill="currentColor" />
-                </motion.div>
-                <span>for a better tomorrow</span>
-              </motion.div>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <Link to="/privacy" className="hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              <span>•</span>
+              <Link to="/terms" className="hover:text-primary transition-colors">
+                Terms & Conditions
+              </Link>
+              <span>•</span>
+              <Link to="/faq" className="hover:text-primary transition-colors">
+                FAQ
+              </Link>
             </div>
           </div>
         </div>

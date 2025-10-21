@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Quote, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Quote, Star, Target, CheckCircle } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';

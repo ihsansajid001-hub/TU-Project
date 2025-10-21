@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { MapPin, Users, Globe, ArrowRight } from 'lucide-react';
+import { Globe, ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Link } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Check, Building2, Globe, Users, Zap, Heart, ArrowRight } from 'lucide-react';
+import { Check, Globe, Users, Zap, Heart, ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useState } from 'react';
 
