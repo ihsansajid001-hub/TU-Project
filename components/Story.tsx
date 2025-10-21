@@ -2,9 +2,43 @@ import { motion } from 'framer-motion';
 import { Quote, MapPin, Star } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Link } from 'react-router-dom';
-import { testimonials } from '../lib/mockData';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface Story {
+  id: string;
+  name: string;
+  location: string;
+  project: string;
+  profile_image_url: string;
+  quote: string;
+  story: string;
+  impact: string;
+}
 
 export function Story() {
+  const [testimonials, setTestimonials] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStories();
+  }, []);
+
+  const fetchStories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('stories')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTestimonials(data || []);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section id="story" className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
@@ -68,6 +102,11 @@ export function Story() {
         </motion.div>
 
         {/* Testimonials Grid */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground mb-20">Loading stories...</div>
+        ) : testimonials.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground mb-20">No stories available yet.</div>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
           {testimonials.map((testimonial, index) => (
             <Link key={testimonial.id} to={`/story/${testimonial.id}`}>
@@ -91,7 +130,7 @@ export function Story() {
                       <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-lg" />
                       <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-primary/30">
                         <ImageWithFallback
-                          src={testimonial.image}
+                          src={testimonial.profile_image_url}
                           alt={testimonial.name}
                           className="w-full h-full object-cover"
                         />
@@ -148,6 +187,7 @@ export function Story() {
           </Link>
           ))}
         </div>
+        )}
 
         {/* Bottom CTA */}
         <motion.div

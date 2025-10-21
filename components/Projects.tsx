@@ -1,11 +1,44 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Tag, CheckCircle, Clock } from 'lucide-react';
-import { projects } from '../lib/mockData';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+
+interface Project {
+  id: string;
+  title: string;
+  location: string;
+  category: string;
+  status: string;
+  date: string;
+  image_url: string;
+  description: string;
+}
 
 export function Projects() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = ['all', ...Array.from(new Set(projects.map(p => p.category)))];
 
@@ -81,6 +114,11 @@ export function Projects() {
         </motion.div>
 
         {/* Projects Grid */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading projects...</div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">No projects available yet.</div>
+        ) : (
         <motion.div
           layout
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -106,7 +144,7 @@ export function Projects() {
                   <motion.img
                     whileHover={{ scale: 1.1 }}
                     transition={{ duration: 0.6 }}
-                    src={project.image}
+                    src={project.image_url}
                     alt={project.title}
                     className="w-full h-full object-cover"
                   />
@@ -115,11 +153,11 @@ export function Projects() {
                   {/* Status Badge */}
                   <div className="absolute top-4 right-4">
                     <div className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-                      project.status === 'ongoing'
+                      project.status === 'Ongoing'
                         ? 'bg-primary text-white'
                         : 'bg-white dark:bg-gray-800 text-foreground'
                     }`}>
-                      {project.status === 'ongoing' ? (
+                      {project.status === 'Ongoing' ? (
                         <>
                           <Clock size={12} />
                           Ongoing
@@ -163,6 +201,7 @@ export function Projects() {
           </Link>
           ))}
         </motion.div>
+        )}
       </div>
     </section>
   );

@@ -1,49 +1,102 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
-import { works as initialWorks, Work } from '../../lib/mockData';
+import { supabase } from '../../lib/supabase';
 import { ImageUpload } from './ImageUpload';
 
+interface GalleryItem {
+  id: string;
+  title: string;
+  image_url: string;
+  hashtag: string | null;
+  description: string | null;
+}
+
 export function GalleryManager() {
-  const [works, setWorks] = useState<Work[]>(initialWorks);
+  const [items, setItems] = useState<GalleryItem[]>([]);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState<Partial<Work>>({});
+  const [formData, setFormData] = useState<Partial<GalleryItem>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGallery();
+  }, []);
+
+  const fetchGallery = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('gallery')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setItems(data || []);
+    } catch (error) {
+      console.error('Error fetching gallery:', error);
+      alert('Failed to load gallery');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setIsAdding(true);
     setFormData({
-      id: 0,
       title: '',
-      image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800',
-      description: '',
-      link: '#'
+      image_url: '',
+      hashtag: '',
+      description: ''
     });
   };
 
-  const handleEdit = (work: Work) => {
-    setIsEditing(String(work.id));
-    setFormData(work);
+  const handleEdit = (item: GalleryItem) => {
+    setIsEditing(item.id);
+    setFormData(item);
   };
 
-  const handleSave = () => {
-    if (isAdding) {
-      const newWork = {
-        ...formData,
-        id: Date.now(),
-      } as Work;
-      setWorks([...works, newWork]);
-      setIsAdding(false);
-    } else if (isEditing) {
-      setWorks(works.map(w => String(w.id) === isEditing ? { ...w, ...formData } : w));
-      setIsEditing(null);
+  const handleSave = async () => {
+    try {
+      if (isAdding) {
+        const { error } = await supabase
+          .from('gallery')
+          .insert([formData]);
+
+        if (error) throw error;
+        alert('Gallery item added successfully!');
+      } else if (isEditing) {
+        const { error } = await supabase
+          .from('gallery')
+          .update(formData)
+          .eq('id', isEditing);
+
+        if (error) throw error;
+        alert('Gallery item updated successfully!');
+      }
+
+      await fetchGallery();
+      handleCancel();
+    } catch (error) {
+      console.error('Error saving gallery item:', error);
+      alert('Failed to save gallery item');
     }
-    setFormData({});
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this gallery item?')) {
-      setWorks(works.filter(w => w.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this gallery item?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('gallery')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      alert('Gallery item deleted successfully!');
+      await fetchGallery();
+    } catch (error) {
+      console.error('Error deleting gallery item:', error);
+      alert('Failed to delete gallery item');
     }
   };
 
@@ -52,6 +105,10 @@ export function GalleryManager() {
     setIsEditing(null);
     setFormData({});
   };
+
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading gallery...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -80,33 +137,31 @@ export function GalleryManager() {
           <h3 className="text-xl font-bold text-foreground mb-4">
             {isAdding ? 'Add New Gallery Item' : 'Edit Gallery Item'}
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <input
               type="text"
               placeholder="Title"
               value={formData.title || ''}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
+              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
             />
-            <div className="md:col-span-2">
-              <ImageUpload
-                value={formData.image || ''}
-                onChange={(imageUrl) => setFormData({ ...formData, image: imageUrl })}
-                label="Gallery Image"
-              />
-            </div>
+            <ImageUpload
+              value={formData.image_url || ''}
+              onChange={(imageUrl) => setFormData({ ...formData, image_url: imageUrl })}
+              label="Gallery Image"
+            />
             <input
               type="text"
-              placeholder="Link (e.g., #education)"
-              value={formData.link || ''}
-              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
+              placeholder="# (e.g., education, technology)"
+              value={formData.hashtag || ''}
+              onChange={(e) => setFormData({ ...formData, hashtag: e.target.value })}
+              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
             />
             <textarea
               placeholder="Description"
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
+              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
               rows={3}
             />
           </div>
@@ -131,27 +186,30 @@ export function GalleryManager() {
 
       {/* Gallery Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {works.map((work) => (
+        {items.map((item) => (
           <motion.div
-            key={work.id}
+            key={item.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="glass rounded-xl overflow-hidden border border-primary/20 flex flex-col"
           >
-            <img src={work.image} alt={work.title} className="w-full h-32 object-cover" />
+            <img src={item.image_url} alt={item.title} className="w-full h-32 object-cover" />
             <div className="p-4 flex flex-col flex-1">
-              <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-1">{work.title}</h3>
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">{work.description}</p>
+              <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-1">{item.title}</h3>
+              {item.hashtag && (
+                <p className="text-sm text-primary mb-2">#{item.hashtag}</p>
+              )}
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">{item.description}</p>
               <div className="flex gap-2 mt-auto">
                 <button
-                  onClick={() => handleEdit(work)}
+                  onClick={() => handleEdit(item)}
                   className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-primary/10 text-primary transition-colors text-sm"
                 >
                   <Edit size={16} />
                   <span>Edit</span>
                 </button>
                 <button
-                  onClick={() => handleDelete(work.id)}
+                  onClick={() => handleDelete(item.id)}
                   className="flex-1 flex items-center justify-center gap-1 px-3 py-2 glass rounded-lg hover:bg-red-500/10 text-red-500 transition-colors text-sm"
                 >
                   <Trash2 size={16} />
@@ -162,6 +220,12 @@ export function GalleryManager() {
           </motion.div>
         ))}
       </div>
+
+      {items.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          No gallery items yet. Click "Add Gallery Item" to create one.
+        </div>
+      )}
     </div>
   );
 }

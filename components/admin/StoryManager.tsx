@@ -1,54 +1,108 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
-import { stories as initialStories, Testimonial } from '../../lib/mockData';
+import { supabase } from '../../lib/supabase';
 import { ImageUpload } from './ImageUpload';
 
-type Story = Testimonial;
+interface Story {
+  id: string;
+  name: string;
+  location: string;
+  project: string;
+  profile_image_url: string;
+  quote: string;
+  story: string;
+  impact: string;
+}
 
 export function StoryManager() {
-  const [stories, setStories] = useState<Story[]>(initialStories);
+  const [stories, setStories] = useState<Story[]>([]);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<Partial<Story>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStories();
+  }, []);
+
+  const fetchStories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('stories')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setStories(data || []);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+      alert('Failed to load stories');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setIsAdding(true);
     setFormData({
-      id: 0,
       name: '',
       location: '',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
       project: '',
-      story: '',
+      profile_image_url: '',
       quote: '',
+      story: '',
       impact: ''
     });
   };
 
   const handleEdit = (story: Story) => {
-    setIsEditing(String(story.id));
+    setIsEditing(story.id);
     setFormData(story);
   };
 
-  const handleSave = () => {
-    if (isAdding) {
-      const newStory = {
-        ...formData,
-        id: Date.now(),
-      } as Story;
-      setStories([...stories, newStory]);
-      setIsAdding(false);
-    } else if (isEditing) {
-      setStories(stories.map(s => String(s.id) === isEditing ? { ...s, ...formData } : s));
-      setIsEditing(null);
+  const handleSave = async () => {
+    try {
+      if (isAdding) {
+        const { error } = await supabase
+          .from('stories')
+          .insert([formData]);
+
+        if (error) throw error;
+        alert('Story added successfully!');
+      } else if (isEditing) {
+        const { error } = await supabase
+          .from('stories')
+          .update(formData)
+          .eq('id', isEditing);
+
+        if (error) throw error;
+        alert('Story updated successfully!');
+      }
+
+      await fetchStories();
+      handleCancel();
+    } catch (error) {
+      console.error('Error saving story:', error);
+      alert('Failed to save story');
     }
-    setFormData({});
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this story?')) {
-      setStories(stories.filter(s => s.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this story?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('stories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      alert('Story deleted successfully!');
+      await fetchStories();
+    } catch (error) {
+      console.error('Error deleting story:', error);
+      alert('Failed to delete story');
     }
   };
 
@@ -57,6 +111,10 @@ export function StoryManager() {
     setIsEditing(null);
     setFormData({});
   };
+
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading stories...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -109,8 +167,8 @@ export function StoryManager() {
             />
             <div className="md:col-span-2">
               <ImageUpload
-                value={formData.image || ''}
-                onChange={(imageUrl) => setFormData({ ...formData, image: imageUrl })}
+                value={formData.profile_image_url || ''}
+                onChange={(imageUrl) => setFormData({ ...formData, profile_image_url: imageUrl })}
                 label="Profile Image"
               />
             </div>
@@ -166,7 +224,7 @@ export function StoryManager() {
           >
             <div className="flex items-center gap-3 mb-3">
               <img 
-                src={story.image} 
+                src={story.profile_image_url} 
                 alt={story.name} 
                 className="w-16 h-16 rounded-lg object-cover"
               />
@@ -198,6 +256,12 @@ export function StoryManager() {
           </motion.div>
         ))}
       </div>
+
+      {stories.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          No stories yet. Click "Add Story" to create one.
+        </div>
+      )}
     </div>
   );
 }

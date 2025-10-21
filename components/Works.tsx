@@ -1,8 +1,39 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { works } from '../lib/mockData';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface GalleryItem {
+  id: string;
+  title: string;
+  image_url: string;
+  hashtag: string | null;
+  description: string | null;
+}
 
 export function Works() {
+  const [works, setWorks] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGallery();
+  }, []);
+
+  const fetchGallery = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('gallery')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setWorks(data || []);
+    } catch (error) {
+      console.error('Error fetching gallery:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <section id="works" className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Background */}
@@ -41,6 +72,11 @@ export function Works() {
         </motion.div>
 
         {/* Works Grid */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading gallery...</div>
+        ) : works.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">No gallery items available yet.</div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {works.map((work, index) => (
             <motion.div
@@ -62,7 +98,7 @@ export function Works() {
                   <motion.img
                     whileHover={{ scale: 1.1 }}
                     transition={{ duration: 0.6 }}
-                    src={work.image}
+                    src={work.image_url}
                     alt={work.title}
                     className="w-full h-full object-cover"
                   />
@@ -84,22 +120,18 @@ export function Works() {
 
                 {/* Content */}
                 <div className="p-8">
-                  <p className="text-muted-foreground mb-6 leading-relaxed text-lg">
+                  {work.hashtag && (
+                    <p className="text-primary mb-3 font-semibold">#{work.hashtag}</p>
+                  )}
+                  <p className="text-muted-foreground leading-relaxed text-lg">
                     {work.description}
                   </p>
-                  <motion.a
-                    href={work.link}
-                    whileHover={{ x: 5 }}
-                    className="inline-flex items-center gap-2 text-primary font-semibold group-hover:gap-4 transition-all"
-                  >
-                    Learn More
-                    <ArrowRight size={20} />
-                  </motion.a>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+        )}
 
         {/* CTA */}
         <motion.div

@@ -1,12 +1,44 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { works } from '../lib/mockData';
 import { Link } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface GalleryItem {
+  id: string;
+  title: string;
+  image_url: string;
+  hashtag: string | null;
+  description: string | null;
+}
 
 export function GalleryPreview() {
-  // Show only first 3 items
-  const previewWorks = works.slice(0, 3);
+  const [works, setWorks] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGallery();
+  }, []);
+
+  const fetchGallery = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('gallery')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setWorks(data || []);
+    } catch (error) {
+      console.error('Error fetching gallery:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const previewWorks = works;
 
   return (
     <section id="gallery" className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
@@ -46,6 +78,11 @@ export function GalleryPreview() {
         </motion.div>
 
         {/* Works Grid */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground mb-12">Loading gallery...</div>
+        ) : previewWorks.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground mb-12">No gallery items available yet.</div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {previewWorks.map((work, index) => (
             <motion.div
@@ -70,7 +107,7 @@ export function GalleryPreview() {
                     className="w-full h-full"
                   >
                     <ImageWithFallback
-                      src={work.image}
+                      src={work.image_url}
                       alt={work.title}
                       className="w-full h-full object-cover"
                     />
@@ -100,6 +137,7 @@ export function GalleryPreview() {
             </motion.div>
           ))}
         </div>
+        )}
 
         {/* View More Button */}
         <motion.div

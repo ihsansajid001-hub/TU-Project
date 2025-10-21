@@ -1,38 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { supabase } from '../lib/supabase';
+
+interface Story {
+  id: string;
+  name: string;
+  location: string;
+  profile_image_url: string;
+  quote: string;
+}
 
 export function StoryPreview() {
-  const testimonials = [
-    {
-      name: 'Aisha Mohammed',
-      location: 'Nairobi, Kenya',
-      image: 'https://images.unsplash.com/photo-1634552516330-ab1ccc0f605e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21tdW5pdHklMjBtZW1iZXIlMjBzbWlsaW5nfGVufDF8fHx8MTc2MDczNzc4NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      quote: 'Team United didn\'t just change my life—they gave me hope and a future I never thought possible.'
-    },
-    {
-      name: 'Carlos Silva',
-      location: 'São Paulo, Brazil',
-      image: 'https://images.unsplash.com/photo-1664843917218-71f7b6bb3afc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHN0dWRlbnQlMjBzdWNjZXNzfGVufDF8fHx8MTc2MDczNzc4NHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      quote: 'They showed me that my background doesn\'t define my future. Skills and determination do.'
-    },
-    {
-      name: 'Priya Sharma',
-      location: 'Mumbai, India',
-      image: 'https://images.unsplash.com/photo-1648966448046-818d8c74b015?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxncmF0ZWZ1bCUyMHBlcnNvbiUyMHBvcnRyYWl0fGVufDF8fHx8MTc2MDczNzc4NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      quote: 'We learned that change starts with us. Team United gave us the tools and confidence to make it happen.'
-    },
-    {
-      name: 'James Okonkwo',
-      location: 'Lagos, Nigeria',
-      image: 'https://images.unsplash.com/photo-1751666526244-40239a251eae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3V0aCUyMHZvbHVudGVlciUyMGhhcHB5fGVufDF8fHx8MTc2MDczNzc4NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      quote: 'Team United taught me that leadership isn\'t about age—it\'s about vision, action, and collaboration.'
-    }
-  ];
-
+  const [testimonials, setTestimonials] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    fetchStories();
+  }, []);
+
+  const fetchStories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('stories')
+        .select('id, name, location, profile_image_url, quote')
+        .order('created_at', { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+      setTestimonials(data || []);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
@@ -101,6 +106,11 @@ export function StoryPreview() {
         </motion.div>
 
         {/* Carousel Container */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground mb-12">Loading stories...</div>
+        ) : testimonials.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground mb-12">No stories available yet.</div>
+        ) : (
         <div className="relative max-w-5xl mx-auto mb-12">
           {/* Main Carousel Card */}
           <div className="relative glass rounded-3xl border border-primary/20 overflow-hidden">
@@ -119,7 +129,7 @@ export function StoryPreview() {
                       <div className="absolute inset-0 bg-primary/30 rounded-3xl blur-2xl" />
                       <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-3xl overflow-hidden border-4 border-primary/30">
                         <ImageWithFallback
-                          src={testimonials[currentIndex].image}
+                          src={testimonials[currentIndex].profile_image_url}
                           alt={testimonials[currentIndex].name}
                           className="w-full h-full object-cover"
                         />
@@ -190,6 +200,7 @@ export function StoryPreview() {
             ))}
           </div>
         </div>
+        )}
 
         {/* More Stories Button */}
         <motion.div

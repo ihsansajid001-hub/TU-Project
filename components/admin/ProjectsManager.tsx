@@ -1,52 +1,109 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
-import { projects as initialProjects, Project } from '../../lib/mockData';
+import { supabase } from '../../lib/supabase';
 import { ImageUpload } from './ImageUpload';
 
+interface Project {
+  id: string;
+  title: string;
+  location: string;
+  category: string;
+  status: string;
+  date: string;
+  image_url: string;
+  description: string;
+}
+
 export function ProjectsManager() {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<Partial<Project>>({});
+  const [loading, setLoading] = useState(true);
+
+  // Fetch projects from Supabase
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      alert('Failed to load projects');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setIsAdding(true);
     setFormData({
-      id: 0,
       title: '',
       description: '',
       category: 'Education',
-      status: 'ongoing',
+      status: 'Ongoing',
       date: new Date().toISOString().split('T')[0],
       location: '',
-      image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800'
+      image_url: ''
     });
   };
 
   const handleEdit = (project: Project) => {
-    setIsEditing(String(project.id));
+    setIsEditing(project.id);
     setFormData(project);
   };
 
-  const handleSave = () => {
-    if (isAdding) {
-      const newProject = {
-        ...formData,
-        id: Date.now(),
-      } as Project;
-      setProjects([...projects, newProject]);
-      setIsAdding(false);
-    } else if (isEditing) {
-      setProjects(projects.map(p => String(p.id) === isEditing ? { ...p, ...formData } : p));
-      setIsEditing(null);
+  const handleSave = async () => {
+    try {
+      if (isAdding) {
+        const { error } = await supabase
+          .from('projects')
+          .insert([formData]);
+
+        if (error) throw error;
+        alert('Project added successfully!');
+      } else if (isEditing) {
+        const { error } = await supabase
+          .from('projects')
+          .update(formData)
+          .eq('id', isEditing);
+
+        if (error) throw error;
+        alert('Project updated successfully!');
+      }
+
+      await fetchProjects();
+      handleCancel();
+    } catch (error) {
+      console.error('Error saving project:', error);
+      alert('Failed to save project');
     }
-    setFormData({});
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this project?')) {
-      setProjects(projects.filter(p => p.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      alert('Project deleted successfully!');
+      await fetchProjects();
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      alert('Failed to delete project');
     }
   };
 
@@ -55,6 +112,10 @@ export function ProjectsManager() {
     setIsEditing(null);
     setFormData({});
   };
+
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading projects...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -104,17 +165,17 @@ export function ProjectsManager() {
               className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
             >
               <option>Education</option>
+              <option>Technology</option>
               <option>Environment</option>
               <option>Charity</option>
-              <option>Technology</option>
             </select>
             <select
-              value={formData.status || 'ongoing'}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as 'completed' | 'ongoing' })}
+              value={formData.status || 'Ongoing'}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
             >
-              <option value="ongoing">Ongoing</option>
-              <option value="completed">Completed</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
             </select>
             <input
               type="date"
@@ -124,8 +185,8 @@ export function ProjectsManager() {
             />
             <div className="md:col-span-2">
               <ImageUpload
-                value={formData.image || ''}
-                onChange={(imageUrl) => setFormData({ ...formData, image: imageUrl })}
+                value={formData.image_url || ''}
+                onChange={(imageUrl) => setFormData({ ...formData, image_url: imageUrl })}
                 label="Project Image"
               />
             </div>
@@ -166,7 +227,7 @@ export function ProjectsManager() {
             className="glass rounded-xl p-4 border border-primary/20 flex flex-col"
           >
             <img 
-              src={project.image} 
+              src={project.image_url} 
               alt={project.title} 
               className="w-full h-32 object-cover rounded-lg mb-3"
             />
@@ -195,6 +256,12 @@ export function ProjectsManager() {
           </motion.div>
         ))}
       </div>
+
+      {projects.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          No projects yet. Click "Add Project" to create one.
+        </div>
+      )}
     </div>
   );
 }

@@ -1,11 +1,46 @@
 import { motion } from 'framer-motion';
 import { Calendar, Tag, CheckCircle, Clock, ArrowRight } from 'lucide-react';
-import { projects } from '../lib/mockData';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface Project {
+  id: string;
+  title: string;
+  location: string;
+  category: string;
+  status: string;
+  date: string;
+  image_url: string;
+  description: string;
+}
 
 export function ProjectsPreview() {
-  // Show only first 3 projects
-  const previewProjects = projects.slice(0, 3);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const previewProjects = projects;
 
   return (
     <section id="projects" className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
@@ -44,6 +79,11 @@ export function ProjectsPreview() {
         </motion.div>
 
         {/* Projects Grid - Only 3 cards */}
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading projects...</div>
+        ) : previewProjects.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">No projects available yet.</div>
+        ) : (
         <motion.div
           layout
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"
@@ -69,7 +109,7 @@ export function ProjectsPreview() {
                   <motion.img
                     whileHover={{ scale: 1.1 }}
                     transition={{ duration: 0.6 }}
-                    src={project.image}
+                    src={project.image_url}
                     alt={project.title}
                     className="w-full h-full object-cover"
                   />
@@ -78,11 +118,11 @@ export function ProjectsPreview() {
                   {/* Status Badge */}
                   <div className="absolute top-4 right-4">
                     <div className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-                      project.status === 'ongoing'
+                      project.status === 'Ongoing'
                         ? 'bg-primary text-white'
                         : 'bg-white dark:bg-gray-800 text-foreground'
                     }`}>
-                      {project.status === 'ongoing' ? (
+                      {project.status === 'Ongoing' ? (
                         <>
                           <Clock size={12} />
                           Ongoing
@@ -125,6 +165,7 @@ export function ProjectsPreview() {
             </motion.div>
           ))}
         </motion.div>
+        )}
 
         {/* Show More Button */}
         <motion.div
