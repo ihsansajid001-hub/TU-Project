@@ -18,13 +18,16 @@ export function Admin() {
 
   const handleLogin = (username: string, password: string) => {
     // Simple authentication - in production, use proper backend authentication
-    if (username === 'admin' && password === 'teamunited2024') {
+    const validUsername = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
+    const validPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'teamunited2024';
+    
+    if (username === validUsername && password === validPassword) {
       setIsAuthenticated(true);
       setUsername(username);
       localStorage.setItem('adminAuth', 'true');
       localStorage.setItem('adminUsername', username);
     } else {
-      alert('Invalid credentials. Use username: admin, password: teamunited2024');
+      alert(`Invalid credentials. Use username: ${validUsername}, password: ${validPassword}`);
     }
   };
 

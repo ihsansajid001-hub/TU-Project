@@ -1,13 +1,58 @@
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, MapPin, Users, Target, TrendingUp, CheckCircle, Clock } from 'lucide-react';
-import { projects } from '../lib/mockData';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface Project {
+  id: string;
+  title: string;
+  location: string;
+  category: string;
+  status: string;
+  date: string;
+  image_url: string;
+  description: string;
+}
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const project = projects.find(p => p.id === Number(id));
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProject();
+  }, [id]);
+
+  const fetchProject = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setProject(data);
+    } catch (error) {
+      console.error('Error fetching project:', error);
+      setProject(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="relative py-32 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading project...</p>
+        </div>
+      </section>
+    );
+  }
 
   if (!project) {
     return (
@@ -58,7 +103,7 @@ export function ProjectDetail() {
           className="relative rounded-3xl overflow-hidden mb-12 h-[400px] md:h-[500px]"
         >
           <ImageWithFallback
-            src={project.image}
+            src={project.image_url}
             alt={project.title}
             className="w-full h-full object-cover"
           />
@@ -67,11 +112,11 @@ export function ProjectDetail() {
           {/* Status Badge */}
           <div className="absolute top-8 right-8">
             <div className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 backdrop-blur-sm ${
-              project.status === 'ongoing'
+              project.status === 'Ongoing'
                 ? 'bg-primary text-white'
                 : 'bg-white dark:bg-gray-800 text-foreground'
             }`}>
-              {project.status === 'ongoing' ? (
+              {project.status === 'Ongoing' ? (
                 <>
                   <Clock size={16} />
                   Ongoing
@@ -114,45 +159,77 @@ export function ProjectDetail() {
         >
           <div className="glass rounded-2xl p-6 border border-primary/10">
             <Calendar className="text-primary mb-3" size={24} />
-            <p className="text-sm text-muted-foreground mb-1">Timeline</p>
-            <p className="text-foreground font-semibold">{project.timeline || 'In Progress'}</p>
+            <p className="text-sm text-muted-foreground mb-1">Date</p>
+            <p className="text-foreground font-semibold">
+              {new Date(project.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
           </div>
           <div className="glass rounded-2xl p-6 border border-primary/10">
             <MapPin className="text-primary mb-3" size={24} />
             <p className="text-sm text-muted-foreground mb-1">Location</p>
-            <p className="text-foreground font-semibold">{project.location || 'Multiple Locations'}</p>
+            <p className="text-foreground font-semibold">{project.location}</p>
           </div>
           <div className="glass rounded-2xl p-6 border border-primary/10">
             <Users className="text-primary mb-3" size={24} />
-            <p className="text-sm text-muted-foreground mb-1">Team Size</p>
-            <p className="text-foreground font-semibold">{project.teamSize || 'Volunteer-driven'}</p>
+            <p className="text-sm text-muted-foreground mb-1">Category</p>
+            <p className="text-foreground font-semibold">{project.category}</p>
           </div>
         </motion.div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-12">
-            {/* Full Description */}
-            {project.fullDescription && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                <h2 className="text-3xl font-bold text-foreground mb-6">
-                  <span className="gradient-text">About</span> This Project
-                </h2>
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-muted-foreground leading-relaxed text-lg">
-                    {project.fullDescription}
-                  </p>
-                </div>
-              </motion.div>
-            )}
+        <div className="grid grid-cols-1 gap-12">
+          {/* Full Description */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <h2 className="text-3xl font-bold text-foreground mb-6">
+              <span className="gradient-text">About</span> This Project
+            </h2>
+            <div className="prose prose-lg max-w-none">
+              <p className="text-muted-foreground leading-relaxed text-lg">
+                {project.description}
+              </p>
+            </div>
+          </motion.div>
 
-            {/* Goals */}
-            {project.goals && project.goals.length > 0 && (
+          {/* CTA Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="glass rounded-2xl p-8 border border-primary/10 text-center"
+          >
+            <h3 className="text-2xl font-bold text-foreground mb-4">
+              Want to <span className="gradient-text">Contribute?</span>
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Join us in making a difference. Your support can help us achieve our goals.
+            </p>
+            <Link to="/become-volunteer">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative group inline-block"
+              >
+                <div className="absolute inset-0 bg-primary rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
+                <div className="relative px-8 py-3 bg-primary rounded-xl text-white font-semibold">
+                  Join as Volunteer
+                </div>
+              </motion.button>
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Remove old sections */}
+        <div className="hidden">
+          {/* Goals */}
+          {false && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -213,11 +290,7 @@ export function ProjectDetail() {
                 </div>
               </motion.div>
             )}
-          </div>
-
-          {/* Right Column - Impact Metrics */}
-          <div className="lg:col-span-1">
-            {project.impact && project.impact.length > 0 && (
+          {false && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -270,7 +343,6 @@ export function ProjectDetail() {
                 </div>
               </motion.div>
             )}
-          </div>
         </div>
 
         {/* Related Projects CTA */}

@@ -1,13 +1,58 @@
 import { motion } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Quote, Star, Target, TrendingUp, CheckCircle } from 'lucide-react';
-import { testimonials } from '../lib/mockData';
+import { ArrowLeft, MapPin, Quote, Star } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface Story {
+  id: string;
+  name: string;
+  location: string;
+  project: string;
+  profile_image_url: string;
+  quote: string;
+  story: string;
+  impact: string;
+}
 
 export function StoryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const story = testimonials.find(t => t.id === Number(id));
+  const [story, setStory] = useState<Story | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStory();
+  }, [id]);
+
+  const fetchStory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('stories')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setStory(data);
+    } catch (error) {
+      console.error('Error fetching story:', error);
+      setStory(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="relative py-32 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading story...</p>
+        </div>
+      </section>
+    );
+  }
 
   if (!story) {
     return (
@@ -86,7 +131,7 @@ export function StoryDetail() {
                 <div className="absolute inset-0 bg-primary/30 rounded-3xl blur-xl" />
                 <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden border-4 border-primary/30">
                   <ImageWithFallback
-                    src={story.image}
+                    src={story.profile_image_url}
                     alt={story.name}
                     className="w-full h-full object-cover"
                   />
@@ -123,25 +168,23 @@ export function StoryDetail() {
           {/* Left Column - Main Story */}
           <div className="lg:col-span-2 space-y-12">
             {/* Full Story */}
-            {story.fullStory && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                <h2 className="text-3xl font-bold text-foreground mb-6">
-                  <span className="gradient-text">The</span> Full Story
-                </h2>
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-muted-foreground leading-relaxed text-lg whitespace-pre-line">
-                    {story.fullStory}
-                  </p>
-                </div>
-              </motion.div>
-            )}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <h2 className="text-3xl font-bold text-foreground mb-6">
+                <span className="gradient-text">The</span> Full Story
+              </h2>
+              <div className="prose prose-lg max-w-none">
+                <p className="text-muted-foreground leading-relaxed text-lg whitespace-pre-line">
+                  {story.story}
+                </p>
+              </div>
+            </motion.div>
 
-            {/* Challenges Overcome */}
-            {story.challenges && story.challenges.length > 0 && (
+            {/* Hide old sections */}
+            {false && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -200,27 +243,6 @@ export function StoryDetail() {
                       <p className="text-foreground leading-relaxed flex-1">{achievement}</p>
                     </motion.div>
                   ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Future Goals */}
-            {story.futureGoals && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <TrendingUp className="text-primary" size={28} />
-                  <h2 className="text-3xl font-bold text-foreground">
-                    Future <span className="gradient-text">Vision</span>
-                  </h2>
-                </div>
-                <div className="glass rounded-xl p-6 border border-primary/10">
-                  <p className="text-muted-foreground leading-relaxed text-lg">
-                    {story.futureGoals}
-                  </p>
                 </div>
               </motion.div>
             )}
