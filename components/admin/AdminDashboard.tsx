@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, FolderKanban, Image, BookOpen, Home, Sun, Moon, Users } from 'lucide-react';
+import { LogOut, FolderKanban, Image, BookOpen, Home, Sun, Moon, Users, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProjectsManager } from './ProjectsManager';
 import { GalleryManager } from './GalleryManager';
 import { StoryManager } from './StoryManager';
 import { LeadersManager } from './LeadersManager';
+import { SettingsManager } from './SettingsManager';
 
 interface AdminDashboardProps {
   onLogout: () => void;
   username: string;
 }
 
-type Tab = 'projects' | 'gallery' | 'story' | 'leaders';
+type Tab = 'projects' | 'gallery' | 'story' | 'leaders' | 'settings';
 
 export function AdminDashboard({ onLogout, username }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('projects');
@@ -42,6 +43,7 @@ export function AdminDashboard({ onLogout, username }: AdminDashboardProps) {
     { id: 'gallery' as Tab, label: 'Gallery', icon: Image },
     { id: 'story' as Tab, label: 'Stories', icon: BookOpen },
     { id: 'leaders' as Tab, label: 'Leaders', icon: Users },
+    { id: 'settings' as Tab, label: 'Settings', icon: Settings },
   ];
 
   return (
@@ -123,6 +125,7 @@ export function AdminDashboard({ onLogout, username }: AdminDashboardProps) {
           {activeTab === 'gallery' && <GalleryManager />}
           {activeTab === 'story' && <StoryManager />}
           {activeTab === 'leaders' && <LeadersManager />}
+          {activeTab === 'settings' && <SettingsManager />}
         </motion.div>
       </div>
     </div>

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { AdminLogin } from './admin/AdminLogin';
 import { AdminDashboard } from './admin/AdminDashboard';
+import { supabase } from '../lib/supabase';
 
 export function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -16,18 +18,43 @@ export function Admin() {
     }
   }, []);
 
-  const handleLogin = (username: string, password: string) => {
-    // Simple authentication - in production, use proper backend authentication
-    const validUsername = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
-    const validPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'teamunited2024';
-    
-    if (username === validUsername && password === validPassword) {
-      setIsAuthenticated(true);
-      setUsername(username);
-      localStorage.setItem('adminAuth', 'true');
-      localStorage.setItem('adminUsername', username);
-    } else {
-      alert(`Invalid credentials. Use username: ${validUsername}, password: ${validPassword}`);
+  const handleLogin = async (usernameOrEmail: string, password: string) => {
+    setLoading(true);
+    try {
+      // First try database authentication
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('email', usernameOrEmail)
+        .eq('password', password)
+        .single();
+
+      if (data && !error) {
+        // Database user found
+        setIsAuthenticated(true);
+        setUsername(data.email);
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminUsername', data.email);
+        return;
+      }
+
+      // Fallback to environment variables for backward compatibility
+      const validUsername = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
+      const validPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'teamunited2024';
+      
+      if (usernameOrEmail === validUsername && password === validPassword) {
+        setIsAuthenticated(true);
+        setUsername(usernameOrEmail);
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminUsername', usernameOrEmail);
+      } else {
+        alert('Invalid credentials. Please check your email and password.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,7 +66,7 @@ export function Admin() {
   };
 
   if (!isAuthenticated) {
-    return <AdminLogin onLogin={handleLogin} />;
+    return <AdminLogin onLogin={handleLogin} loading={loading} />;
   }
 
   return <AdminDashboard onLogout={handleLogout} username={username} />;

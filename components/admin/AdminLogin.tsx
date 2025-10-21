@@ -4,9 +4,10 @@ import { Lock, User, Eye, EyeOff } from 'lucide-react';
 
 interface AdminLoginProps {
   onLogin: (username: string, password: string) => void;
+  loading?: boolean;
 }
 
-export function AdminLogin({ onLogin }: AdminLoginProps) {
+export function AdminLogin({ onLogin, loading = false }: AdminLoginProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -15,9 +16,10 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      setError('Please enter both username and password');
+      setError('Please enter both email and password');
       return;
     }
+    setError('');
     onLogin(username, password);
   };
 
@@ -40,7 +42,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Username
+                Email
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
@@ -48,8 +50,9 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 glass rounded-xl border border-primary/20 bg-background text-foreground focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Enter username"
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-3 glass rounded-xl border border-primary/20 bg-background text-foreground focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
+                  placeholder="Enter email or username"
                 />
               </div>
             </div>
@@ -64,7 +67,8 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 glass rounded-xl border border-primary/20 bg-background text-foreground focus:outline-none focus:border-primary transition-colors"
+                  disabled={loading}
+                  className="w-full pl-10 pr-12 py-3 glass rounded-xl border border-primary/20 bg-background text-foreground focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
                   placeholder="Enter password"
                 />
                 <button
@@ -83,15 +87,35 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
               </div>
             )}
 
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 text-muted-foreground cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 text-primary rounded" />
+                <span>Remember me</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => alert('Please contact the super admin to reset your password.')}
+                className="text-primary hover:text-primary-dark transition-colors"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-semibold transition-colors"
+              disabled={loading}
+              className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {loading ? 'Logging in...' : 'Login'}
             </motion.button>
           </form>
+          
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            <p>Use your admin email and password</p>
+            <p className="text-xs mt-1">Or default: admin / teamunited2024</p>
+          </div>
         </div>
       </motion.div>
     </div>
