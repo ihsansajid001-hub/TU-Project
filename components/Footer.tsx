@@ -95,7 +95,8 @@ export function Footer() {
               {[
                 { name: 'Become a Partner', path: '/become-partner' },
                 { name: 'Become a Volunteer', path: '/become-volunteer' },
-                { name: 'Share My Story', path: '/share-story' }
+                { name: 'Share My Story', path: '/share-story' },
+                { name: 'FAQ', path: '/faq' }
               ].map((link) => (
                 <li key={link.name}>
                   <Link to={link.path}>
@@ -138,7 +139,17 @@ export function Footer() {
               &copy; {currentYear} Team United. All rights reserved.
             </p>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <Link to="/privacy" className="hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+                <span>•</span>
+                <Link to="/terms" className="hover:text-primary transition-colors">
+                  Terms & Conditions
+                </Link>
+              </div>
+              
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -154,12 +165,6 @@ export function Footer() {
                 </motion.div>
                 <span>for a better tomorrow</span>
               </motion.div>
-              <Link 
-                to="/admin" 
-                className="text-xs text-muted-foreground hover:text-primary transition-colors opacity-50 hover:opacity-100"
-              >
-                Admin
-              </Link>
             </div>
           </div>
         </div>

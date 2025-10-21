@@ -21,6 +21,10 @@ import { BecomeVolunteer } from './components/BecomeVolunteer';
 import { ShareStory } from './components/ShareStory';
 import { Admin } from './components/Admin';
 import { WhatsAppButton } from './components/WhatsAppButton';
+import { NotFound } from './components/NotFound';
+import { FAQ } from './components/FAQ';
+import { TermsAndConditions } from './components/TermsAndConditions';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
 
 // Home Page Component
 function HomePage() {
@@ -102,8 +106,13 @@ export default function App() {
           {/* Admin Panel */}
           <Route path="/admin" element={<Admin />} />
           
-          {/* Catch all unmatched routes and redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Legal & Help Pages */}
+          <Route path="/faq" element={<PageWrapper><FAQ /></PageWrapper>} />
+          <Route path="/terms" element={<PageWrapper><TermsAndConditions /></PageWrapper>} />
+          <Route path="/privacy" element={<PageWrapper><PrivacyPolicy /></PageWrapper>} />
+          
+          {/* 404 Page - Catch all unmatched routes */}
+          <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
         </Routes>
       </Layout>
     </BrowserRouter>
