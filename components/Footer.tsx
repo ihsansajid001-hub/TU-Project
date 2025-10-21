@@ -138,21 +138,29 @@ export function Footer() {
               &copy; {currentYear} Team United. All rights reserved.
             </p>
             
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="flex items-center gap-2 text-muted-foreground text-sm"
-            >
-              <span>Made with</span>
+            <div className="flex items-center gap-4">
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="flex items-center gap-2 text-muted-foreground text-sm"
               >
-                <Heart className="text-primary" size={16} fill="currentColor" />
+                <span>Made with</span>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  <Heart className="text-primary" size={16} fill="currentColor" />
+                </motion.div>
+                <span>for a better tomorrow</span>
               </motion.div>
-              <span>for a better tomorrow</span>
-            </motion.div>
+              <Link 
+                to="/admin" 
+                className="text-xs text-muted-foreground hover:text-primary transition-colors opacity-50 hover:opacity-100"
+              >
+                Admin
+              </Link>
+            </div>
           </div>
         </div>
       </div>

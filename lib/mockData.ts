@@ -306,6 +306,9 @@ export const testimonials: Testimonial[] = [
   }
 ];
 
+// Export stories as an alias for testimonials for admin panel
+export const stories = testimonials;
+
 export const milestones: Milestone[] = [
   {
     year: "2020",

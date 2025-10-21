@@ -19,6 +19,7 @@ import { Footer } from './components/Footer';
 import { BecomePartner } from './components/BecomePartner';
 import { BecomeVolunteer } from './components/BecomeVolunteer';
 import { ShareStory } from './components/ShareStory';
+import { Admin } from './components/Admin';
 
 // Home Page Component
 function HomePage() {
@@ -77,6 +78,9 @@ export default function App() {
             <Route path="/become-partner" element={<PageWrapper><BecomePartner /></PageWrapper>} />
             <Route path="/become-volunteer" element={<PageWrapper><BecomeVolunteer /></PageWrapper>} />
             <Route path="/share-story" element={<PageWrapper><ShareStory /></PageWrapper>} />
+            
+            {/* Admin Panel */}
+            <Route path="/admin" element={<Admin />} />
             
             {/* Catch all unmatched routes and redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
