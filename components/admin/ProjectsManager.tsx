@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { projects as initialProjects, Project } from '../../lib/mockData';
+import { ImageUpload } from './ImageUpload';
 
 export function ProjectsManager() {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
@@ -121,13 +122,13 @@ export function ProjectsManager() {
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
             />
-            <input
-              type="url"
-              placeholder="Image URL"
-              value={formData.image || ''}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground"
-            />
+            <div className="md:col-span-2">
+              <ImageUpload
+                value={formData.image || ''}
+                onChange={(imageUrl) => setFormData({ ...formData, image: imageUrl })}
+                label="Project Image"
+              />
+            </div>
             <textarea
               placeholder="Description"
               value={formData.description || ''}

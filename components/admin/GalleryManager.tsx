@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { works as initialWorks, Work } from '../../lib/mockData';
+import { ImageUpload } from './ImageUpload';
 
 export function GalleryManager() {
   const [works, setWorks] = useState<Work[]>(initialWorks);
@@ -87,13 +88,13 @@ export function GalleryManager() {
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
             />
-            <input
-              type="url"
-              placeholder="Image URL"
-              value={formData.image || ''}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              className="px-4 py-2 glass rounded-xl border border-primary/20 bg-background text-foreground md:col-span-2"
-            />
+            <div className="md:col-span-2">
+              <ImageUpload
+                value={formData.image || ''}
+                onChange={(imageUrl) => setFormData({ ...formData, image: imageUrl })}
+                label="Gallery Image"
+              />
+            </div>
             <input
               type="text"
               placeholder="Link (e.g., #education)"
