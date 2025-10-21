@@ -52,7 +52,7 @@ export function Partners() {
   return (
     <section className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden border-t border-border/50">
       {/* Background */}
-      <div className="absolute inset-0 bg-background/50 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-muted/30 dark:bg-background/50 backdrop-blur-sm" />
 
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header */}
@@ -89,11 +89,11 @@ export function Partners() {
                   <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   {/* Logo container */}
-                  <div className="relative glass rounded-2xl p-6 md:p-8 border border-primary/10 group-hover:border-primary/30 transition-all h-32 w-full flex items-center justify-center">
+                  <div className="relative bg-white dark:bg-background/50 rounded-2xl p-6 md:p-8 border border-border shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all h-32 w-full flex items-center justify-center">
                     <img
                       src={partner.logo}
                       alt={partner.name}
-                      className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all opacity-60 group-hover:opacity-100"
+                      className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all opacity-70 group-hover:opacity-100"
                     />
                   </div>
                 </div>
