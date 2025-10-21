@@ -20,6 +20,7 @@ import { BecomePartner } from './components/BecomePartner';
 import { BecomeVolunteer } from './components/BecomeVolunteer';
 import { ShareStory } from './components/ShareStory';
 import { Admin } from './components/Admin';
+import { WhatsAppButton } from './components/WhatsAppButton';
 
 // Home Page Component
 function HomePage() {
@@ -63,6 +64,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Footer - Hidden on admin routes */}
       {!isAdminRoute && <Footer />}
+
+      {/* WhatsApp Button - Hidden on admin routes */}
+      {!isAdminRoute && <WhatsAppButton />}
     </div>
   );
 }
