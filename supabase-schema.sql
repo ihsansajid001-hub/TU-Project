@@ -20,9 +20,9 @@ CREATE TABLE projects (
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Projects are viewable by everyone" ON projects FOR SELECT USING (true);
-CREATE POLICY "Authenticated users can insert projects" ON projects FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Authenticated users can update projects" ON projects FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Authenticated users can delete projects" ON projects FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "Anyone can insert projects" ON projects FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update projects" ON projects FOR UPDATE USING (true);
+CREATE POLICY "Anyone can delete projects" ON projects FOR DELETE USING (true);
 
 -- GALLERY TABLE
 CREATE TABLE gallery (
@@ -38,9 +38,9 @@ CREATE TABLE gallery (
 ALTER TABLE gallery ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Gallery items are viewable by everyone" ON gallery FOR SELECT USING (true);
-CREATE POLICY "Authenticated users can insert gallery items" ON gallery FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Authenticated users can update gallery items" ON gallery FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Authenticated users can delete gallery items" ON gallery FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "Anyone can insert gallery items" ON gallery FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update gallery items" ON gallery FOR UPDATE USING (true);
+CREATE POLICY "Anyone can delete gallery items" ON gallery FOR DELETE USING (true);
 
 -- STORIES TABLE
 CREATE TABLE stories (
@@ -59,9 +59,9 @@ CREATE TABLE stories (
 ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Stories are viewable by everyone" ON stories FOR SELECT USING (true);
-CREATE POLICY "Authenticated users can insert stories" ON stories FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Authenticated users can update stories" ON stories FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Authenticated users can delete stories" ON stories FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "Anyone can insert stories" ON stories FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update stories" ON stories FOR UPDATE USING (true);
+CREATE POLICY "Anyone can delete stories" ON stories FOR DELETE USING (true);
 
 -- INDEXES
 CREATE INDEX idx_projects_status ON projects(status);
